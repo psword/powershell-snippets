@@ -1,0 +1,1 @@
+Remove-Computer -ComputerName Computer.domain.name -UnjoinDomainCredential (Get-Credential) -WorkgroupName Workgroup -PassThru -Verbose -Restart
