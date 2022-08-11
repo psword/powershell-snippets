@@ -1,0 +1,6 @@
+get-wmiobject Win32_LogicalDisk | ? {$_.drivetype -eq 3} | % {get-psdrive $_.deviceid[0]}
+
+
+
+
+Get-WmiObject -Class Win32_logicaldisk | ? { $_.DriveType -eq 3 } | Select-Object -Property DeviceID

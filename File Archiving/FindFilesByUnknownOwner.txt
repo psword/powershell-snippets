@@ -1,0 +1,14 @@
+[DateTime]$start = '2019-02-01 00:00:00'
+[DateTime]$end = '2020-08-17 00:00:00'
+[String]$username = "O:S-1-5-21-[0-9]*-[0-9]*-[0-9]*-[0-9]*"
+[String]$outfile = "c:\Temp\searchowner.csv"
+$path = Get-ChildItem "\\servername\c`$\Shared Folders\" -Recurse | Where-Object {$_.LastWriteTime -gt $start -and $_.LastWriteTime -lt $end}
+#$path = Get-ChildItem "\\ad2\d`$\Shared Folders\" -Recurse
+Foreach( $file in $path ) {
+  $f = Get-Acl $file.FullName
+    if( $f.Owner -match $username ) {
+        Write-Host( "{0}"-f $file.FullName | Out-File `
+              -Encoding "UTF8" `
+                    -FilePath $outfile -Append)
+    }
+}

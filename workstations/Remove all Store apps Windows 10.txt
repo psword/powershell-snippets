@@ -1,0 +1,8 @@
+Get-AppxPackage | Select Name, PackageFullName  'gets the names of the apps'
+
+get-appxpackage -allusers *xboxapp* | remove-appxpackage  '-allusers or leave out for 1 user' 
+
+Get-AppxPackage PackageFullName | Remove-AppxPackage 'removes all apps for logged in user'
+
+Get-AppxPackage -AllUsers | Remove-AppxPackage  'removes all apps for all users'
+

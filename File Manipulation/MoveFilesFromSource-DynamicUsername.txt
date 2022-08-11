@@ -1,0 +1,59 @@
+﻿<#
+.SYNOPSIS
+This function will allow admin to move files using an input file based on CSV.  It expects to pull from a file that has this type of content:
+
+\\servername\c$\folder\username\folder\file.extension
+\\servername\c$\folder\username\folder\file.extension
+
+It will split at the username portion so we can capture the username in the statement.  This can be modified according to the directories you're dealing with.
+
+.DESCRIPTION
+This script is really meant to be used in conjuction with a script to find the file owner by UNC path.  Such a script would print the filenames in a CSV file for input.
+In addition, such a script will have folders prefixed with folders that have the username in the path.  It is for a specific case, like home folders.
+
+.PARAMETER inputfile
+This is the full path of the CSV file.
+
+.PARAMETER username
+This will name the folder according to the username you enter.
+
+.PARAMETER destinationpath
+This is the UNC pathname of the destination you want to use.
+
+.EXAMPLE
+Move-UserFiles -inputfule C:\Temp\Test.csv -Username jdoe -DestinationPath \\FileServer\share\subfolder.
+
+.NOTES
+All Parameters are required.
+#>
+Function Move-UserFiles {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)]
+        [string]$inputfile,
+        #[Parameter(Mandatory)]
+        #[string]$username,
+        [Parameter(Mandatory)]
+        [string]$destinationpath
+    )
+    
+    Write-Verbose -Message "Now importing your files so we can perform the necessary actions..."
+    $files = @()
+    Import-Csv -Path $inputfile -Header Path | ForEach-Object {
+    $files += $_.Path
+    
+    }
+
+        Write-Verbose -Message "Entering move sequence..."
+        foreach ($file in $files) {
+            $filename = Split-path -Path $file -Leaf
+            $username = $file.Replace("\\servername\c$\folder","")
+            $path1 = $file
+            $path2 = "$destinationpath\$username$filename"
+            Write-Verbose -Message "Creating blank item:"
+            New-Item -ItemType File -Path "$path2" -Force
+            Write-Verbose -Message "Moving the files!"
+            Move-Item -Path "$path1" -Destination "$path2" -Force
+       }
+    
+    }

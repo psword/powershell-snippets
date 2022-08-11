@@ -1,0 +1,2 @@
+$Search = 'accountname'
+(Get-EventLog -LogName security | Select-Object -Property Category,Index,TimeGenerated,EntryType,Source,InstanceID,Message) -match $Search | Export-CSV \\share_path\filename.csv

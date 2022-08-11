@@ -1,0 +1,58 @@
+#Powershell
+
+Get-ChildItem -Path 'C:\Path' -Force -ErrorAction SilentlyContinue | where-object {($_.lastwritetime -lt (Get-Date).AddDays(-120))} | Remove-Item -Force -ErrorAction SilentlyContinue -Recurse
+
+
+
+#Cmd
+
+ForFiles /p "c:\scripts" /s /d -30 /c "cmd /c del @path"
+
+ForFiles /p "c:\scripts" /s /d -30 /c "cmd /c del @file"
+
+To conduct a dry run before attempting to delete files, to check which files are affected for the specified criteria, replace the command del with echo, as below:
+
+ForFiles /p "c:\scripts" /s /d -30 /c "cmd /c echo @path"
+
+#-or-
+
+ForFiles /p "c:\scripts" /s /d -30 /c "cmd /c echo @file"
+
+#Sample:
+
+On Error Resume Next
+
+Set oFileSys = WScript.CreateObject("Scripting.FileSystemObject")
+sRoot = "C:\Path To Old Files"			'Path root to look for files
+today = Date
+nMaxFileAge = 3					'Files older than this (in days) will be deleted
+
+DeleteFiles(sRoot)
+
+Function DeleteFiles(ByVal sFolder)
+
+	Set oFolder = oFileSys.GetFolder(sFolder)
+	Set aFiles = oFolder.Files
+	Set aSubFolders = oFolder.SubFolders
+
+	For Each file in aFiles
+		dFileCreated = FormatDateTime(file.DateCreated, "2")
+		If DateDiff("d", dFileCreated, today) > nMaxFileAge Then
+			file.Delete(True)
+		End If
+	Next
+
+	For Each folder in aSubFolders
+		DeleteFiles(folder.Path)
+	Next
+
+End Function
+
+#***The above script takes into consideration the “Date Created” property of items instead of “Date Last Modified”. If you want to delete files that haven’t been modified in the last N days, change the following line in the script:
+
+dFileCreated = FormatDateTime(file.DateCreated, "2")
+
+to
+
+dFileCreated = FormatDateTime(file.DateLastModified, "2")
+

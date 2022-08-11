@@ -1,0 +1,15 @@
+﻿$EmailFrom = “server@domain.com”
+$EmailTo = “user@domain.com”
+$Subject = “Subject Name”
+$Body = “Body Content”
+$SMTPServer = “REDACTED”
+$SMTPClient = New-Object Net.Mail.SmtpClient($SmtpServer, 25)
+$SMTPClient.Send($EmailFrom, $EmailTo, $Subject, $Body)
+$timestamp = Get-Date
+$timestampcustom = Get-Date -UFormat %Y_%m_%d-%H_%M_%S
+New-Item -Path \\sharepath -ItemType Directory
+Get-EventLog -LogName Application -After $timestamp.AddHours(-1) -Before $timestamp.AddHours(1) |
+    Format-Table -wrap > \\sharepath\Application.txt
+Get-EventLog -LogName System -After $timestamp.AddHours(-1) -Before $timestamp.AddHours(1) |
+    Format-Table -wrap > \\sharepath\System.txt
+gci C:\directory | select -Last 1 | Copy-Item -Destination "\\sharepath"

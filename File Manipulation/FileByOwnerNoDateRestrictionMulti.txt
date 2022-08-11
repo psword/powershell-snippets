@@ -1,0 +1,173 @@
+﻿Write-Host ("Current Script User Context: ") $env:USERNAME -ForegroundColor Green
+Write-Host ("Current Domain Context: ") $env:USERDOMAIN -ForegroundColor Green
+$CurrentUserEmail = @()
+get-aduser -identity "$env:username" -Properties EmailAddress | Select-Object EmailAddress | ForEach-Object {
+    $CurrentUserEmail += $_.EmailAddress
+}
+
+#Below is an e-mail function that will generate an e-mail with attachments and deliver to the administrator who is running the script....
+#assuming the admin has an e-mail to use.
+function Send-ToEmail([string]$email){
+
+    $message = new-object Net.Mail.MailMessage;
+    $message.From = "$CurrentUserEmail";
+    $message.To.Add($email);
+    $message.Subject = "Files by Owner :: $usernamedomain :: directory report for $location";
+    $message.Body = "This e-mail will contain an attachment with a report on ownership for the user in the subject line.  The file will give a directory list.";
+
+    write-host ("Currently adding you attachment....") -ForegroundColor Green
+    #$file = "$outfile"
+    $attachment = new-object Net.Mail.Attachment($outfile)
+    $message.Attachments.Add($outfile)
+	
+    write-host ("Adding the SMTP server....") -ForegroundColor Green
+    $smtp = new-object Net.Mail.SmtpClient("IPAdress", "PortNumber");
+    $smtp.EnableSSL = $false;
+    
+    write-host ("Currently sending your e-mail message....") -ForegroundColor Green
+    $smtp.send($message);
+    write-host ("Completing message and attachment disposition....") -ForegroundColor Green
+    $attachment.Dispose()
+    write-host ("This message has been sent.") -ForegroundColor Green; 
+ }
+
+#This imports the usernames you want to search for.  At this time, this script supports the samaccount, not INTAT\uname.  This can always be changed in the future.
+Write-Host ("Are we searching for a single user, or multiple?  If single, then type the shortname.  If multiple, provide a file.")
+$inputs = Read-Host -Prompt "Input?  (S or M?)"
+if ($inputs -like "s") {
+    $typedusername = Read-Host -Prompt "What is the shortname of the user?"
+    New-Item -Path "C:\Temp\$typedusername.csv" -ItemType File -Value "$typedusername" -Force
+    $username = Import-CSV "C:\Temp\$typedusername.csv" -Header "user"
+}    elseif ($inputs -like "m") {
+        $importfilepath = Read-Host ("What is the path to the file you are importing?  Please give the full path a filename.  `
+        It must be a CSV file.  The script will assume you exported a list of users in the form 'shortname' from somewhere else.  `
+        EX: C:\Temp\File.Csv")
+        $username = Import-CSV "$importfilepath" -Header "user"
+    }
+
+
+#This is the UNC path we are searching.
+Write-Host ("Please tell the script if you are searching one location or multiple.")
+$inputs1 = Read-Host -Prompt "Input (S or M)?"
+if ($inputs1 -like "s") {
+    $singlesearchpath = Read-Host -Prompt "What is the path to where we are searching?  Please enter it in the appropriate form - `
+    using UNC or local paths.  EX: \\server\sharename or C:\LocalPath\Subfolder.  Note: No quotes here please."
+    New-Item -Path "C:\Temp\searchpath.csv" -ItemType File -Value "$singlesearchpath" -Force
+    $location = @()
+    Import-CSV "C:\Temp\searchpath.csv" -Header "path" | ForEach-Object {
+        $location += $_.Path
+    }
+    #Diagnostic display for the operator.
+    Write-Host ("This is the path we are searching: ") $location -ForegroundColor Red -BackgroundColor Yellow
+
+    #This is where the script will retrieve all the files in the directory.
+    $path = Get-ChildItem $location -File -Recurse
+
+    #This Foreach loop will perform an iteration for each user contained in the CSV file.
+    Foreach( $user in $username ) {
+        #This is the shortname for the user.
+        $samaccount = $user.user
+        #Diagnostic display for the operator.
+        Write-Host ("This is the shortname for the user we are searching: ") $user.user -ForegroundColor Red -BackgroundColor Yellow
+    
+        #This will be the user account that we search for in each file ACL.
+        $usernamedomain = "INTAT\$samaccount"
+        #Diagnostic display for the operator.
+        Write-Host ("This is the username in DOMAIN\uname format: $usernamedomain") -ForegroundColor Red -BackgroundColor Yellow
+    
+        #This will be the filename prefix without extension.
+        $filename = "$samaccount-searchowner"
+        #Diagnostic display for the operator.
+        Write-Host ("This is the output filename: $filename") -ForegroundColor Red -BackgroundColor Yellow
+    
+        #This is the full output file with extension.
+        $outfile = "c:\Temp\$filename.csv"
+        #Diagnostic display for the operator.
+        Write-Host ("This is the full path of the file: $outfile") -ForegroundColor Red -BackgroundColor Yellow
+    
+            #Foreach loop iterating through every file, then exporting the content to a file.
+            Foreach( $file in $path ) {
+                $f = Get-Acl $file.FullName -ErrorAction SilentlyContinue
+                if( $f.Owner -eq $usernamedomain ) {
+                    Write-Output( "{0}" -f $file.FullName) -ErrorAction SilentlyContinue >> "$outfile"
+                    }
+            } 
+            
+            #Proving the file has content.  Diagnostic purposes for the operator.  If there is not a file, 
+            #then the owner was not found to have any files in the directory being searched.
+            #If ([System.IO.File]::Exists($outfile)) {
+            #Write-Host ("Getting File Content:")
+            #Get-Content -Path $outfile
+            #}
+            
+            #Creates e-mail and attaches the files.  Sends to currently logged on administrator.
+            #Must have an e-mail address added to AD properties.
+            If ([System.IO.File]::Exists($outfile)) {
+            Send-ToEmail -email "$CurrentUserEmail"
+            }
+        }
+}
+    elseif ($inputs1 -like "m") {
+        $importfilepath1 = Read-Host ("What is the path to the file you are importing?  Please give the full path a filename.  `
+        It must be a CSV file.  The script will assume you created a list of paths contained in the file of the form '\\servername\sharepath'.  `
+        EX of input file: C:\Temp\File.Csv")
+        
+        $multisearchpaths = @()
+        Import-CSV "$importfilepath1" -Header "path" | ForEach-Object {
+            $multisearchpaths += $_.Path
+        }
+
+        #Diagnostic display for the operator.
+        Write-Host ("These are the paths we are searching: ") $multisearchpaths -ForegroundColor Red -BackgroundColor Yellow
+
+        #This is where the script will retrieve all the files in the directory.
+        Foreach ($location in $multisearchpaths){
+            $path = Get-ChildItem "$location" -File -Recurse
+            $filenameappend = $location -replace '\\','_'
+            
+            #This Foreach loop will perform an iteration for each user contained in the CSV file.
+            Foreach( $user in $username ) {
+                #This is the shortname for the user.
+                $samaccount = $user.user
+                #Diagnostic display for the operator.
+                Write-Host ("This is the shortname for the user we are searching: ") $user.user -ForegroundColor Red -BackgroundColor Yellow
+    
+                #This will be the user account that we search for in each file ACL.
+                $usernamedomain = "INTAT\$samaccount"
+                #Diagnostic display for the operator.
+                Write-Host ("This is the username in DOMAIN\uname format: ") $usernamedomain -ForegroundColor Red -BackgroundColor Yellow
+    
+                #This will be the filename prefix without extension.
+                $filename = "$samaccount$filenameappend"
+                #Diagnostic display for the operator.
+                Write-Host ("This is the output filename: ") $filename -ForegroundColor Red -BackgroundColor Yellow
+    
+                #This is the full output file with extension.
+                $outfile = "c:\Temp\$filename.csv"
+                #Diagnostic display for the operator.
+                Write-Host ("This is the full path of the file: ") $outfile -ForegroundColor Red -BackgroundColor Yellow
+    
+                    #Foreach loop iterating through every file, then exporting the content to a file.
+                    Foreach( $file in $path ) {
+                        $f = Get-Acl $file.FullName -ErrorAction SilentlyContinue
+                        if( $f.Owner -eq $usernamedomain ) {
+                            Write-Output( "{0}" -f $file.FullName) -ErrorAction SilentlyContinue >> "$outfile"
+                            }
+                    } 
+    
+                #Proving the files have content.  Diagnostic purposes for the operator.  If there is not a file, 
+                #then the owner was not found to have any files in the directory being searched.  
+                #If ([System.IO.File]::Exists($outfile)) {
+                #    Write-Host ("Getting File Content:")
+                #    Get-Content -Path $outfile
+                #    }
+                
+                #Creates e-mail and attaches the files.  Sends to currently logged on administrator.
+                #Must have an e-mail address added to AD properties.
+                If ([System.IO.File]::Exists($outfile)) {
+                Send-ToEmail -email "$CurrentUserEmail"
+                }
+        }
+    }
+}    
+Exit   

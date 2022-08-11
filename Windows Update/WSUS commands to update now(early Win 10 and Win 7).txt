@@ -1,0 +1,33 @@
+To force a client that is working properly.
+
+$updateSession = new-object -com "Microsoft.Update.Session";
+$updates = $updateSession.CreateupdateSearcher().Search($criteria).Updates
+wuauclt /reportnow
+
+https://www.ajtek.ca/wsus/client-machines-not-reporting-to-wsus-properly/
+
+To force a client that is not reporting correctly:
+
+First, remove the client from WSUS.  This script Requires a minimum of an hour, up to 48.  Then, on the client:
+
+Stop-Service -Name BITS, wuauserv -Force
+Remove-ItemProperty -Name AccountDomainSid, PingID, SusClientId, SusClientIDValidation -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate\ -ErrorAction SilentlyContinue
+Remove-Item "$env:SystemRoot\SoftwareDistribution\" -Recurse -Force -ErrorAction SilentlyContinue
+Start-Service -Name BITS, wuauserv
+wuauclt /resetauthorization /detectnow
+(New-Object -ComObject Microsoft.Update.AutoUpdate).DetectNow()
+
+
+OR
+
+net stop bits
+net stop wuauserv
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" /v AccountDomainSid /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" /v PingID /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" /v SusClientId /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WindowsUpdate" /v SusClientIDValidation /f
+rd /s /q "%SystemRoot%\SoftwareDistribution"
+net start bits
+net start wuauserv
+wuauclt /resetauthorization /detectnow
+PowerShell.exe (New-Object -ComObject Microsoft.Update.AutoUpdate).DetectNow()

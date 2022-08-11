@@ -1,0 +1,15 @@
+﻿Set-ExecutionPolicy -ExecutionPolicy Bypass
+[String]$samaccount = Read-Host -Prompt "What is the user's SAM account name? <example: jdoe>"
+[String]$username = "INTAT\$samaccount"
+[String]$filename = "$samaccount-searchowner"
+[String]$outfile = "c:\Temp\$filename.csv"
+[String]$uncpath = Read-Host -Prompt "What is the UNC path of the share? <examples: \\server\share OR D:\parentfolder\childfolder (WITHOUT quotes)>"
+$path = Get-ChildItem "$uncpath" -File -Recurse
+Foreach( $file in $path ) {
+  $f = Get-Acl $file.FullName
+    if( $f.Owner -eq $username ) {
+        Write-Host( "{0}"-f $file.FullName | Out-File `
+              -Encoding "UTF8" `
+                    -FilePath $outfile -Append)
+    }
+}

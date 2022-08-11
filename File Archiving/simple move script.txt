@@ -1,0 +1,5 @@
+$files = Get-Content C:\temp\filename.csv
+$usersam = Read-Host "What is the username that owns the files?"
+foreach ($file in $files) {
+    $directoryname = Split-path -Path $file -NoQualifier;$path1 = $file;$path2 = "\\UNC_Sharepath"; New-Item -ItemType File -Path $path2 -Force; Move-Item -Path $path1 -Destination $path2 -Force
+       }

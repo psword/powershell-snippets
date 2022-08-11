@@ -1,0 +1,42 @@
+Write-Host ("Current Script User Context: ") $env:USERNAME -ForegroundColor Green
+Write-Host ("Current Domain Context: ") $env:USERDOMAIN -ForegroundColor Green
+$CurrentUserEmail = @()
+get-aduser -identity "$env:username" -Properties EmailAddress | Select-Object EmailAddress | ForEach-Object {
+    $CurrentUserEmail += $_.EmailAddress
+}
+function Send-ToEmail([string]$email){
+
+    Write-Host ("Current Script User Context: ") $env:USERNAME -ForegroundColor Green
+    Write-Host ("Current Domain Context: ") $env:USERDOMAIN -ForegroundColor Green
+    $CurrentUserEmail = @()
+    get-aduser -identity "$env:username" -Properties EmailAddress | Select-Object EmailAddress | ForEach-Object {
+    $CurrentUserEmail += $_.EmailAddress
+    }
+
+    $message = new-object Net.Mail.MailMessage;
+    $message.From = "$CurrentUserEmail";
+    $message.To.Add($email);
+    $message.Subject = "Files by Owner :: $usernamedomain :: directory report for $location";
+    $message.Body = "This e-mail will contain an attachment with a report on ownership for the user in the subject line.  The file will give a directory list.";
+
+    #write-host ("Currently adding you attachment....") -ForegroundColor Green
+    #$file = "$outfile"
+    #$attachment = new-object Net.Mail.Attachment($file)
+    #$message.Attachments.Add($file)
+	
+    write-host ("Adding the SMTP server....") -ForegroundColor Green
+    $smtp = new-object Net.Mail.SmtpClient("10.1.10.25", "25"); 
+    $smtp.EnableSSL = $false;
+    
+    write-host ("Currently sending your e-mail message....") -ForegroundColor Green
+    $smtp.send($message);
+    #write-host ("Completing message and attachment disposition....") -ForegroundColor Green
+    #$attachment.Dispose()
+    write-host ("This message has been sent.") -ForegroundColor Green; 
+ }
+
+
+
+Send-ToEmail -email "$CurrentUserEmail"
+
+Exit

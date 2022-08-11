@@ -1,0 +1,355 @@
+//Use Sconfig.cmd to set some of these options and others, and install Windows Updates
+
+You may also use //Corefig
+
+get-netadapter
+
+get-netipaddress -InterfaceAlias Ethernet0
+
+new-netipaddress -InterfaceAlias Ethernet0 -AddressFamily Ipv4 -IPAddress <REDACTED> -PrefixLength 24 -DefaultGateway <REDACTED>
+set-dnsclientserveraddress -InterfaceAlias Ethernet0 -ServerAddresses ("<REDACTED>","<REDACTED>")
+
+new-netipaddress -InterfaceAlias "<REDACTED>" -AddressFamily Ipv4 -IPAddress <REDACTED> -PrefixLength 24
+
+
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+Install-ADDSDomainController -NoGlobalCatalog:$false -CreateDnsDelegation:$false -Credential (Get-Credential <REDACTED>) -CriticalReplicationOnly:$false -DatabasePath "C:\Windows\NTDS" -DomainName "<REDACTED>" -InstallDns:$true -LogPath "C:\Windows\NTDS" -NoRebootOnCompletion:$false -SiteName "Default-First-Site-Name" -SysvolPath "C:\Windows\SYSVOL" -Force:$true
+
+set-netipinterface -InterfaceAlias Ethernet -DHCP enabled
+
+rename-netadapter -name "Ethernet 3" -newname <REDACTED>
+
+New-NetLbfoTeam -Name "<REDACTED>" -TeamMembers "<REDACTED>","<REDACTED>" -TeamingMode SwitchIndependent -LoadBalancingAlgorithm HyperVPort
+
+winrm quickconfig
+winrm set winrm/config/client '@{TrustedHosts="YourComputerName"}'
+
+HYPER-V
+
+
+new-vmswitch -name <REDACTED> -AllowManagementOS -$true
+
+set-netipinterface -interfacealias <REDACTED> -addressfamily ipv4 -nlmtubytes 9000
+
+Set-VMNetworkAdapterVlan -VMNetworkAdapterName <REDACTED> -Access -VlanID 10 -ManagementOS $true
+
+Steps for Management:
+
+On the host (windows server core)
+
+Enable Remote Management
+Enable Remote Desktop
+Enabled remote: Enable-PSRemoting
+Enabled CredSSP: Enable-WSManCredSSP -Role server
+Allow ports in firewall: 135, 5985
+
+Perform On client
+
+Enable Hyper-V Management Tools in Windows Features
+Run Set-Item WSMan:\localhost\Client\TrustedHosts -Value "My_Server_IP/Hostname" 
+Enable-WSManCredSSP -Role client -DelegateComputer "My_Server_IP/Hostname"
+Config group policy: Computer Configuration > Administrative Templates > System > Credentials Delegation > Allow delegating fresh credentials with NTLM-only server authentication  --> Enable and add wsman/*
+
+Configure hosts or DNS entry for Workgroup Hyper-V Server
+Ensure network profile is “Private” if Workgroup (or Domain if otherwise):
+Set-NetConnectionProfile -InterfaceAlias Ethernet -NetworkCategory Private
+Start WinRM and add Hyper-V Server as Trusted Host:
+Start-Service -Name winrm
+Set-Item WSMan:\localhost\Client\TrustedHosts -Value "hyperv-server.home.local"
+
+To manange through console (if prior to newest versions of Win 10, 1909):
+Add Hyper-V Administrator credential with cmdkey:
+cmdkey /add:HYPSRV1 /user:Administrator /pass:<REDACTED>
+Launch Hyper-V Manager and connect to server (don't specify user)
+
+Or, launch Hyper-V Manager with runas:
+runas /user:HYPSRV1\Administrator /netonly "mmc virtmgmt.msc"
+
+
+To at time resolve issues with connecting and managing:
+
+Run “MOFCOMP %SYSTEMROOT%\System32\WindowsVirtualization.V2.mof”
+To rebuilds the WMI components for virtualization.
+[edit for clarity] This is run on the Hyper-V host.
+
+Then,
+
+Net stop vmms
+
+Net start vmms
+
+New-VHD c:\<REDACTED> -Dynamic -SizeBytes 50GB
+New-VM -Path c:\<REDACTED> -Name <REDACTED> -Generation 1 -Memory 6GB –SwitchName "<REDACTED>"
+Set-VMProcessor <REDACTED> -Count 4
+Set-VM –Name <REDACTED> –AutomaticStartAction Start -AutomaticStopAction Shutdown
+Add-VMHardDiskDrive -ControllerNumber 0 -ControllerType IDE -ControllerLocation 0 -VMName <REDACTED> c:\<REDACTED>
+Get-VMDvdDrive -VMName <REDACTED> -ControllerNumber 1 -ControllerType IDE -ControllerLocation 0
+Set-VMDvdDrive -VMName <REDACTED> –Path c:\<REDACTED>.iso
+
+Add-VMHardDiskDrive -ControllerNumber 0 -ControllerType SCSI -ControllerLocation 1 -VMName <REDACTED> "c:\<REDACTED>.VHDX"
+
+
+
+
+------
+
+New-VM
+Set-NetIPInterface
+New-VMSwitch
+Set-VMNetworkAdapterVlan
+Remove-VMSwitch
+Get-NetAdapter
+
+----
+Examples:
+
+C:\Users\userspace>powershell
+Windows PowerShell
+Copyright (C) 2016 Microsoft Corporation. All rights reserved.
+
+PS C:\Users\userspace> get-netadapter
+
+Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
+----                      --------------------                    ------- ------       ----------             ---------
+vEthernet (<REDACTED>) Hyper-V Virtual Ethernet Adapter #2          19 Up           <REDACTED>        10 Gbps
+Ethernet 6                Intel(R) <REDACTED>...#4      23 Disconnected <REDACTED>        10 Gbps
+<REDACTED>                      <REDACTED> II 10...#34      14 Up           <REDACTED>        10 Gbps
+Ethernet 4                Intel(R) <REDACTED>...#2      21 Disconnected <REDACTED>        10 Gbps
+<REDACTED>                      <REDACTED> II 10...#35      12 Disconnected <REDACTED>          0 bps
+Ethernet 3                Intel(R) <REDACTED>k ...      20 Disconnected <REDACTED>        10 Gbps
+Ethernet                  <REDACTED> Device                 13 Up           <REDACTED>     <REDACTED> Mbps
+Ethernet 5                Intel(R) <REDACTED>...#3      22 Disconnected <REDACTED>        10 Gbps
+
+
+PS C:\Users\userspace> rename-netadapter -name "Ethernet 3" -newname <REDACTED>
+PS C:\Users\userspace> rename-netadapter -name "Ethernet 5" -newname <REDACTED>
+PS C:\Users\userspace> get-netadapter
+
+Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
+----                      --------------------                    ------- ------       ----------             ---------
+vEthernet (<REDACTED>) Hyper-V Virtual Ethernet Adapter #2          19 Up           <REDACTED>        10 Gbps
+Ethernet 6                Intel(R) <REDACTED>...#4      23 Disconnected <REDACTED>        10 Gbps
+<REDACTED>                      <REDACTED> II 10...#34      14 Up           <REDACTED>        10 Gbps
+Ethernet 4                Intel(R) <REDACTED>...#2      21 Disconnected <REDACTED>        10 Gbps
+<REDACTED>                      <REDACTED> II 10...#35      12 Disconnected <REDACTED>          0 bps
+<REDACTED>                    Intel(R) <REDACTED>k ...      20 Disconnected <REDACTED>        10 Gbps
+Ethernet                  <REDACTED> Device                 13 Up           <REDACTED>     <REDACTED> Mbps
+<REDACTED>                    Intel(R) <REDACTED>...#3      22 Disconnected <REDACTED>        10 Gbps
+
+
+PS C:\Users\userspace> New-NetLbfoTeam -Name "<REDACTED>" -TeamMembers "<REDACTED>","<REDACTED>" -TeamingMode SwitchIndependent -LoadBalancingAlgorithm HyperVPort
+
+Confirm
+Are you sure you want to perform this action?
+Creates Team:'<REDACTED>' with TeamMembers:{'<REDACTED>', '<REDACTED>'}, TeamNicName:'<REDACTED>', TeamingMode:'SwitchIndependent' and
+LoadBalancingAlgorithm:'HyperVPort'.
+[Y] Yes  [A] Yes to All  [N] No  [L] No to All  [S] Suspend  [?] Help (default is "Y"): y
+
+
+Name                   : <REDACTED>
+Members                : {<REDACTED>, <REDACTED>}
+TeamNics               : <REDACTED>
+TeamingMode            : SwitchIndependent
+LoadBalancingAlgorithm : HyperVPort
+Status                 : Down
+
+
+PS C:\Users\userspace> get-netadapter -name "<REDACTED>"
+
+Name                      InterfaceDescription                    ifIndex Status       MacAddress             LinkSpeed
+----                      --------------------                    ------- ------       ----------             ---------
+<REDACTED>  Hyper-V Virtual Ethernet Adapter #3          49 Up           <REDACTED>        10 Gbps
+
+
+PS C:\Users\userspace> get-netadapter -name "<REDACTED>" | select *
+
+
+MacAddress                                       : <REDACTED>
+Status                                           : Up
+LinkSpeed                                        : 10 Gbps
+MediaType                                        : 802.3
+PhysicalMediaType                                : Unspecified
+AdminStatus                                      : Up
+MediaConnectionState                             : Connected
+DriverInformation                                : Driver Date 2006-06-21 Version 6.3.9600.16384 NDIS 6.40
+DriverFileName                                   : vmswitch.sys
+NdisVersion                                      : 6.40
+ifOperStatus                                     : Up
+ifAlias                                          : <REDACTED>
+InterfaceAlias                                   : <REDACTED>
+ifIndex                                          : 49
+ifDesc                                           : Hyper-V Virtual Ethernet Adapter #3
+ifName                                           : Ethernet_35
+DriverVersion                                    : 6.3.9600.16384
+LinkLayerAddress                                 : <REDACTED>
+Caption                                          :
+Description                                      :
+ElementName                                      :
+InstanceID                                       : {<REDACTED>}
+CommunicationStatus                              :
+DetailedStatus                                   :
+HealthState                                      :
+InstallDate                                      :
+Name                                             : <REDACTED>
+OperatingStatus                                  :
+OperationalStatus                                :
+PrimaryStatus                                    :
+StatusDescriptions                               :
+AvailableRequestedStates                         :
+EnabledDefault                                   : 2
+EnabledState                                     : 5
+OtherEnabledState                                :
+RequestedState                                   : 12
+TimeOfLastStateChange                            :
+TransitioningToState                             : 12
+AdditionalAvailability                           :
+Availability                                     :
+CreationClassName                                : MSFT_NetAdapter
+DeviceID                                         : {<REDACTED>}
+ErrorCleared                                     :
+ErrorDescription                                 :
+IdentifyingDescriptions                          :
+LastErrorCode                                    :
+MaxQuiesceTime                                   :
+OtherIdentifyingInfo                             :
+PowerManagementCapabilities                      :
+PowerManagementSupported                         :
+PowerOnHours                                     :
+StatusInfo                                       :
+SystemCreationClassName                          : CIM_NetworkPort
+SystemName                                       : HYPSRV1.<REDACTED>
+TotalPowerOnHours                                :
+MaxSpeed                                         :
+OtherPortType                                    :
+PortType                                         :
+RequestedSpeed                                   :
+Speed                                            : 10000000000
+UsageRestriction                                 :
+ActiveMaximumTransmissionUnit                    : 1500
+AutoSense                                        :
+FullDuplex                                       :
+LinkTechnology                                   :
+NetworkAddresses                                 : {F8F21E50A5E0}
+OtherLinkTechnology                              :
+OtherNetworkPortType                             :
+PermanentAddress                                 : F8F21E50A5E0
+PortNumber                                       : 0
+SupportedMaximumTransmissionUnit                 :
+AdminLocked                                      : False
+ComponentID                                      : vms_mp
+ConnectorPresent                                 : False
+DeviceName                                       : \Device\{<REDACTED>}
+DeviceWakeUpEnable                               : False
+DriverDate                                       : 2006-06-21
+DriverDateData                                   : 127953216000000000
+DriverDescription                                : Hyper-V Virtual Ethernet Adapter
+DriverMajorNdisVersion                           : 6
+DriverMinorNdisVersion                           : 40
+DriverName                                       : \SystemRoot\system32\DRIVERS\vmswitch.sys
+DriverProvider                                   : Microsoft
+DriverVersionString                              : 6.3.9600.16384
+EndPointInterface                                : False
+HardwareInterface                                : False
+Hidden                                           : False
+HigherLayerInterfaceIndices                      : {59}
+IMFilter                                         : False
+InterfaceAdminStatus                             : 1
+InterfaceDescription                             : Hyper-V Virtual Ethernet Adapter #3
+InterfaceGuid                                    : {<REDACTED>}
+InterfaceIndex                                   : 49
+InterfaceName                                    : Ethernet_35
+InterfaceOperationalStatus                       : 1
+InterfaceType                                    : 6
+iSCSIInterface                                   : False
+LowerLayerInterfaceIndices                       : {63}
+MajorDriverVersion                               : 1
+MediaConnectState                                : 1
+MediaDuplexState                                 : 0
+MinorDriverVersion                               : 1
+MtuSize                                          : 1500
+NdisMedium                                       : 0
+NdisPhysicalMedium                               : 0
+NetLuid                                          : 1688850447466496
+NetLuidIndex                                     : 35
+NotUserRemovable                                 : True
+OperationalStatusDownDefaultPortNotAuthenticated : False
+OperationalStatusDownInterfacePaused             : False
+OperationalStatusDownLowPowerState               : False
+OperationalStatusDownMediaDisconnected           : False
+PnPDeviceID                                      : ROOT\VMS_MP\0002
+PromiscuousMode                                  : False
+ReceiveLinkSpeed                                 : 10000000000
+State                                            : 2
+TransmitLinkSpeed                                : 10000000000
+Virtual                                          : True
+VlanID                                           :
+WdmInterface                                     : False
+PSComputerName                                   :
+CimClass                                         : ROOT/StandardCimv2:MSFT_NetAdapter
+CimInstanceProperties                            : {Caption, Description, ElementName, InstanceID...}
+CimSystemProperties                              : Microsoft.Management.Infrastructure.CimSystemProperties
+
+
+PS C:\Users\userspace> new-netipaddress -InterfaceAlias "<REDACTED>" -AddressFamily Ipv4 -IPAddress <REDACTED> -PrefixLength 24
+
+
+IPAddress         : <REDACTED>
+InterfaceIndex    : 49
+InterfaceAlias    : <REDACTED>
+AddressFamily     : IPv4
+Type              : Unicast
+PrefixLength      : 24
+PrefixOrigin      : Manual
+SuffixOrigin      : Manual
+AddressState      : Tentative
+ValidLifetime     : Infinite ([TimeSpan]::MaxValue)
+PreferredLifetime : Infinite ([TimeSpan]::MaxValue)
+SkipAsSource      : False
+PolicyStore       : ActiveStore
+
+IPAddress         : <REDACTED>
+InterfaceIndex    : 49
+InterfaceAlias    : <REDACTED>
+AddressFamily     : IPv4
+Type              : Unicast
+PrefixLength      : 24
+PrefixOrigin      : Manual
+SuffixOrigin      : Manual
+AddressState      : Invalid
+ValidLifetime     : Infinite ([TimeSpan]::MaxValue)
+PreferredLifetime : Infinite ([TimeSpan]::MaxValue)
+SkipAsSource      : False
+PolicyStore       : PersistentStore
+
+###############
+
+# Set some firewall rules
+
+#  Allow ping requests in
+Set-NetFirewallRule –Name “FPS-ICMP4-ERQ-In” –Enabled True
+
+#  Allow ping requests out
+Set-NetFirewallRule –Name “FPS-ICMP4-ERQ-Out” –Enabled True
+
+#  Allow remote disk management
+Set-NetFirewallRule –Name “RVM-VDS-In-TCP” –Enabled True
+Set-NetFirewallRule –Name “RVM-VDSLDR-In-TCP” –Enabled True
+Set-NetFirewallRule –Name “RVM-RPCSS-In-TCP” –Enabled True
+
+#  Allow DCOM management requests in
+Set-NetFirewallRule –Name “ComPlusNetworkAccess-DCOM-In” –Enabled True
+
+#  Allow WMI management requets in
+Set-NetFirewallRule –Name “WMI-WINMGMT-In-TCP” –Enabled True
+
+#  Set some services to automatically start and start them.
+Set-Service -Name PlugPlay -StartupType Automatic
+Start-Service PlugPlay
+Set-Service -Name RemoteRegistry -StartupType Automatic
+Start-Service RemoteRegistry
+Set-Service -Name vds -StartupType Automatic
+Start-Service vds
+
+#  Enable Remote Desktop
+(Get-WmiObject Win32_TerminalServiceSetting -Namespace root\cimv2\TerminalServices).SetAllowTsConnections(1,1) | Out-Null
+(Get-WmiObject -Class "Win32_TSGeneralSetting" -Namespace root\cimv2\TerminalServices -Filter "TerminalName='RDP-tcp'").SetUserAuthenticationRequired(0) | Out-Null

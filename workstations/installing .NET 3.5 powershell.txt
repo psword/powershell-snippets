@@ -1,0 +1,21 @@
+Steps
+Start Windows PowerShell in the Administrator Command Prompt by typing:
+
+
+Copy
+powershell
+To install .NET Framework 3.5 from installation media located on a network share, use the following command:
+
+
+Copy
+Install-WindowsFeature Net-Framework-Core -source \\network\share\sxs
+Where \\network\share\sxs is the location of the source files.
+
+For more information about the Install-WindowsFeature cmdlet, see Install-WindowsFeature.
+
+To verify installation, run the following command:
+
+
+Copy
+Get-WindowsFeature
+The Install State column should show Installed for the .NET Framework 3.5 (includes .NET 2.0 and 3.0) feature.

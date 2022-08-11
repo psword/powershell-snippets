@@ -1,0 +1,1 @@
+SETUP.EXE /Auto Upgrade /showoobe none /DynamicUpdate disable /migratedrivers all /copylogs C:\Windows\Temp

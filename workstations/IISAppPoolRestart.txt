@@ -1,0 +1,29 @@
+﻿$EmailFrom = “server@domain.com”
+$EmailTo = “mailbox@domain.com”
+$Subject = “SUBJECT”
+$Body = “MESSAGE”
+$Body1 = “MESSAGE”
+$SMTPServer = “<REDACTED>”
+$SMTPClient = New-Object Net.Mail.SmtpClient($SmtpServer, 25)
+
+$Servers = '<REDACTED>'
+Import-Module WebAdministration
+$AppPool="<REDACTED>"
+$State=Get-WebAppPoolState -Name $AppPool
+$Stopwatch=[diagnostics.stopwatch]::StartNew()
+$Timeout=new-timespan -days 1
+while ($Stopwatch.elapsed -lt $Timeout) {
+    try {
+    if (Test-Path IIS:\AppPools\$AppPool) {
+        if ((Get-WebAppPoolState -Name $AppPool).Value -eq "Stopped") {
+        Start-WebAppPool $AppPool
+        $SMTPClient.Send($EmailFrom, $EmailTo, $Subject, $Body)}
+        else {Write-Output "The app pool is already running!" | Out-Null}
+        }
+    }
+    catch {
+    Write-Output $_.Exception.Message
+    throw
+    } 
+    Start-Sleep -seconds 30
+}

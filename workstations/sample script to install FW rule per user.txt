@@ -1,0 +1,7 @@
+$profiles = Get-ChildItem -Path 'C:\Users' -Directory
+Foreach ($profile in $profiles) {
+    $ExePath = Join-Path -Path $profile.Fullname -ChildPath 'appdata\local\Five9\Five9Softphone-10.0\bin\10.2.16\five9softphone.exe'
+    if (!(Get-NetFirewallApplicationFilter -Program $ExePath)) {
+        New-NetFirewallRule -Displayname "Five9Softphone" -Direction Inbound -Program $ExePath
+    }
+}

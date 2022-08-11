@@ -1,0 +1,101 @@
+C:\Redacted>dism /Get-WimInfo /WimFile:install.esd
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+Details for image : install.esd
+
+Index : 1
+Name : Windows 10 Home
+Description : Windows 10 Home
+Size : 14,212,376,596 bytes
+
+Index : 2
+Name : Windows 10 Home N
+Description : Windows 10 Home N
+Size : 13,441,677,475 bytes
+
+Index : 3
+Name : Windows 10 Home Single Language
+Description : Windows 10 Home Single Language
+Size : 14,211,972,277 bytes
+
+Index : 4
+Name : Windows 10 Education
+Description : Windows 10 Education
+Size : 14,450,251,000 bytes
+
+Index : 5
+Name : Windows 10 Education N
+Description : Windows 10 Education N
+Size : 13,693,633,242 bytes
+
+Index : 6
+Name : Windows 10 Pro
+Description : Windows 10 Pro
+Size : 14,450,428,963 bytes
+
+Index : 7
+Name : Windows 10 Pro N
+Description : Windows 10 Pro N
+Size : 13,691,468,430 bytes
+
+The operation completed successfully.
+
+C:\Redacted>dism /export-image/SourceImageFile:install.esd /SourceIndex:4 /DestinationImageFile:install.wim /Compress:max /CheckIntegrity
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+
+Error: 87
+
+The export-image/sourceimagefile option is unknown.
+For more information, refer to the help by running DISM.exe /?.
+
+The DISM log file can be found at C:\WINDOWS\Logs\DISM\dism.log
+
+C:\Redacted>dism /export-image /SourceImageFile:install.esd /SourceIndex:4 /DestinationImageFile:install.wim /Compress:max /CheckIntegrity
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+Exporting image
+[==========================100.0%==========================]
+The operation completed successfully.
+
+C:\Redacted>dism /Mount-Image /imagefile:"E:\Win10_2004x64ENG_ESDtoWIM\install.wim" /MountDir:E:\mountpoint
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+
+Error: 87
+
+A required option is missing from the command-line.
+Ensure that /index or /name is specified.
+
+The DISM log file can be found at C:\WINDOWS\Logs\DISM\dism.log
+
+C:\Redacted>dism /Mount-Image /imagefile:"E:\Win10_2004x64ENG_ESDtoWIM\install.wim" /Index:1 /MountDir:E:\mountpoint
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+Mounting image
+[==========================100.0%==========================]
+The operation completed successfully.
+
+C:\Redacted>dism /online /cleanup-image /restorehealth /Source:E:\mountpoint\Windows /limitaccess
+
+Deployment Image Servicing and Management tool
+Version: 10.0.19041.329
+
+Image Version: 10.0.19041.331
+
+[==========================100.0%==========================] The restore operation completed successfully.
+The operation completed successfully.
+
+C:\Redacted>
+
+C:\Redacted>dism /UnMount-Image /MountDir:E:\mountpoint /discard

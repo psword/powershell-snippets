@@ -1,0 +1,15 @@
+usoclient.exe StartScan
+
+usoclient.exe StartDownload
+
+usoclient.exe StartInstall
+
+usoclient.exe RefreshSettings
+
+usoclient.exe ResumeUpdate
+
+usoclient.exe ScanInstallWait
+
+usoclient.exe StartInteractiveScan
+
+usoclient.exe RestartDevice

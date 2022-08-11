@@ -1,0 +1,209 @@
+set-netfirewallrule -name RemoteDesktop-UserMode-In-TCP -RemoteAddress <REDACTED>
+set-netfirewallrule -name RemoteDesktop-UserMode-In-UDP -RemoteAddress <REDACTED>
+set-netfirewallrule -name FPS-SMB-In-TCP -RemoteAddress <REDACTED>,<REDACTED>
+set-netfirewallrule -name FPS-NB_Session-In-TCP -RemoteAddress <REDACTED>
+set-netfirewallrule -name FPS-ICMP4-ERQ-In -RemoteAddress <REDACTED>,<REDACTED> -Enabled true
+
+set-netfirewallrule -name FPS-SMB-In-TCP -RemoteAddress <REDACTED>,<REDACTED>
+set-netfirewallrule -name FPS-SMB-In-TCP -RemoteAddress <REDACTED>,<REDACTED> -Enabled true
+set-netfirewallrule -name RPC-EPMAP -RemoteAddress <REDACTED>,<REDACTED> -Enabled true
+
+New-NetFirewallRule -DisplayName "<REDACTED>" -Name "<REDACTED>" -Enabled True -Profile Any -Direction Inbound -Action Allow -RemoteAddress <REDACTED> -Protocol UDP -LocalPort Any -RemotePort Any -InterfaceType Any
+
+
+Veeam
+CMD (Command line)
+To enable these rules via the command line, launch the command prompt console with elevated permissions (as Administrator) and execute the command below:
+
+netsh advfirewall firewall set rule name="Remote Event Log Management (NP-In)" new enable= Yes
+netsh advfirewall firewall set rule name="Remote Event Log Management (RPC)" new enable= Yes
+netsh advfirewall firewall set rule name="Remote Event Log Management (RPC-EPMAP)" new enable= Yes
+netsh advfirewall firewall set rule name="COM+ Network Access (DCOM-In)" new enable= Yes
+ 
+PowerShell
+To enable these rules via the PowerShell, launch the PowerShell console with elevated permissions (as Administrator) and execute the command below:
+
+Set-NetFirewallRule -Name 'RemoteEventLogSvc-NP-In-TCP' -Enabled True -RemoteAddress <REDACTED>,<REDACTED>
+Set-NetFirewallRule -Name 'RemoteEventLogSvc-In-TCP' -Enabled True -RemoteAddress <REDACTED>,<REDACTED>
+Set-NetFirewallRule -Name 'RemoteEventLogSvc-RPCSS-In-TCP' -Enabled True -RemoteAddress <REDACTED>,<REDACTED>
+Set-NetFirewallRule -Name 'ComPlusNetworkAccess-DCOM-In' -Enabled True -RemoteAddress <REDACTED>,<REDACTED>
+
+Name
+----
+vm-monitoring-icmpv6
+vm-monitoring-rpc
+vm-monitoring-icmpv4
+vm-monitoring-dcom
+vm-monitoring-nb-session
+SNMPTRAP-In-UDP
+SNMPTRAP-In-UDP-NoScope
+Wininit-Shutdown-In-Rule-TCP-RPC
+Wininit-Shutdown-In-Rule-TCP-RPC-EPMapper
+EventForwarder-In-TCP
+EventForwarder-RPCSS-In-TCP
+NETDIS-UPnPHost-In-TCP
+NETDIS-UPnPHost-Out-TCP
+NETDIS-NB_Name-In-UDP
+NETDIS-NB_Name-Out-UDP
+NETDIS-NB_Datagram-In-UDP
+NETDIS-NB_Datagram-Out-UDP
+NETDIS-WSDEVNTS-In-TCP
+NETDIS-WSDEVNTS-Out-TCP
+NETDIS-WSDEVNT-In-TCP
+NETDIS-WSDEVNT-Out-TCP
+NETDIS-SSDPSrv-In-UDP
+NETDIS-SSDPSrv-Out-UDP
+NETDIS-UPnP-Out-TCP
+NETDIS-FDPHOST-In-UDP
+NETDIS-FDPHOST-Out-UDP
+NETDIS-LLMNR-In-UDP
+NETDIS-LLMNR-Out-UDP
+NETDIS-FDRESPUB-WSD-In-UDP
+NETDIS-FDRESPUB-WSD-Out-UDP
+Netlogon-NamedPipe-In
+Netlogon-TCP-RPC-In
+SCW-Allow-Inbound-Access-To-ScsHost-TCP-RPC
+SCW-Allow-Inbound-Access-To-ScsHost-TCP-RPC-EndPointMapper
+SCW-Allow-Inbound-Access-To-Rpcss-TCP-Port135
+SSTP-IN-TCP
+RemoteTask-In-TCP
+RemoteTask-RPCSS-In-TCP
+WINRM-HTTP-In-TCP
+WINRM-HTTP-In-TCP-PUBLIC
+WINRM-HTTP-Compat-In-TCP
+Microsoft-Windows-PeerDist-HttpTrans-In
+Microsoft-Windows-PeerDist-HttpTrans-Out
+Microsoft-Windows-PeerDist-WSD-In
+Microsoft-Windows-PeerDist-WSD-Out
+Microsoft-Windows-PeerDist-HostedServer-In
+Microsoft-Windows-PeerDist-HostedServer-Out
+Microsoft-Windows-PeerDist-HostedClient-Out
+FPS-NB_Session-In-TCP
+FPS-NB_Session-Out-TCP
+FPS-SMB-In-TCP
+FPS-SMB-Out-TCP
+FPS-NB_Name-In-UDP
+FPS-NB_Name-Out-UDP
+FPS-NB_Datagram-In-UDP
+FPS-NB_Datagram-Out-UDP
+FPS-SpoolSvc-In-TCP
+FPS-RPCSS-In-TCP
+FPS-ICMP4-ERQ-In
+FPS-ICMP4-ERQ-Out
+FPS-ICMP6-ERQ-In
+FPS-ICMP6-ERQ-Out
+FPS-LLMNR-In-UDP
+FPS-LLMNR-Out-UDP
+RemoteDesktop-UserMode-In-TCP
+RemoteDesktop-UserMode-In-UDP
+RemoteDesktop-Shadow-In-TCP
+RRAS-GRE-In
+RRAS-GRE-Out
+RRAS-L2TP-In-UDP
+RRAS-L2TP-Out-UDP
+RRAS-PPTP-In-TCP
+RRAS-PPTP-Out-TCP
+RVM-VDS-In-TCP
+RVM-VDSLDR-In-TCP
+RVM-RPCSS-In-TCP
+MsiScsi-In-TCP
+MsiScsi-Out-TCP
+TPMVSCMGR-RPCSS-In-TCP-NoScope
+TPMVSCMGR-Server-In-TCP-NoScope
+TPMVSCMGR-Server-Out-TCP-NoScope
+TPMVSCMGR-RPCSS-In-TCP
+TPMVSCMGR-Server-In-TCP
+TPMVSCMGR-Server-Out-TCP
+RemoteEventLogSvc-In-TCP
+RemoteEventLogSvc-NP-In-TCP
+RemoteEventLogSvc-RPCSS-In-TCP
+SPPSVC-In-TCP
+MSDTC-In-TCP
+MSDTC-Out-TCP
+MSDTC-KTMRM-In-TCP
+MSDTC-RPCSS-In-TCP
+PerfLogsAlerts-PLASrv-In-TCP
+PerfLogsAlerts-DCOM-In-TCP
+PerfLogsAlerts-PLASrv-In-TCP-NoScope
+PerfLogsAlerts-DCOM-In-TCP-NoScope
+CoreNet-ICMP6-DU-In
+CoreNet-ICMP6-PTB-In
+CoreNet-ICMP6-PTB-Out
+CoreNet-ICMP6-TE-In
+CoreNet-ICMP6-TE-Out
+CoreNet-ICMP6-PP-In
+CoreNet-ICMP6-PP-Out
+CoreNet-ICMP6-NDS-In
+CoreNet-ICMP6-NDS-Out
+CoreNet-ICMP6-NDA-In
+CoreNet-ICMP6-NDA-Out
+CoreNet-ICMP6-RA-In
+CoreNet-ICMP6-RA-Out
+CoreNet-ICMP6-RS-In
+CoreNet-ICMP6-RS-Out
+CoreNet-ICMP6-LQ-In
+CoreNet-ICMP6-LQ-Out
+CoreNet-ICMP6-LR-In
+CoreNet-ICMP6-LR-Out
+CoreNet-ICMP6-LR2-In
+CoreNet-ICMP6-LR2-Out
+CoreNet-ICMP6-LD-In
+CoreNet-ICMP6-LD-Out
+CoreNet-ICMP4-DUFRAG-In
+CoreNet-IGMP-In
+CoreNet-IGMP-Out
+CoreNet-DHCP-In
+CoreNet-DHCP-Out
+CoreNet-DHCPV6-In
+CoreNet-DHCPV6-Out
+CoreNet-Teredo-In
+CoreNet-Teredo-Out
+CoreNet-IPHTTPS-In
+CoreNet-IPHTTPS-Out
+CoreNet-IPv6-In
+CoreNet-IPv6-Out
+CoreNet-GP-NP-Out-TCP
+CoreNet-GP-Out-TCP
+CoreNet-DNS-Out-UDP
+CoreNet-GP-LSASS-Out-TCP
+RemoteFwAdmin-In-TCP
+RemoteFwAdmin-RPCSS-In-TCP
+ComPlusNetworkAccess-DCOM-In
+ComPlusRemoteAdministration-DCOM-In
+WMI-RPCSS-In-TCP
+WMI-WINMGMT-In-TCP
+WMI-WINMGMT-Out-TCP
+WMI-ASYNC-In-TCP
+RemoteSvcAdmin-In-TCP
+RemoteSvcAdmin-NP-In-TCP
+RemoteSvcAdmin-RPCSS-In-TCP
+FPSSMBD-iWARP-In-TCP
+{F99F4D61-C90F-472D-8AC6-551F280C6188}
+{7EC5E809-5F63-42A4-B1C2-8FE0B62AEC57}
+{2E89D044-5EF0-4843-A0B9-94B93B4A26E1}
+{0AEFAC75-456C-4A32-90B8-945FF146C392}
+{14DE20B6-4CE7-49A8-BAF7-6BC3915A50B6}
+{2A76A825-8231-4506-B775-E695EE547D22}
+{B3206991-B251-4A9C-8D29-97AEE0E2F7DD}
+{92F1ADBA-F296-491E-9372-8128E553EA84}
+{F5BD6FF9-192B-4DEC-B4BC-F154C4BF7B1D}
+{2D74D1AC-D679-4065-8817-FCA989516A5B}
+{E04596E4-01E2-41CC-8020-2737A15ED7F5}
+{6701FCD7-7199-49A3-80B7-04C6C7A6AB26}
+{DC9BD9A8-9A10-4842-870C-395725732F31}
+{D510DCFF-D6F2-478C-9944-438721A30978}
+{4DFFCB02-27FD-47D9-B4D4-A9DA9735377A}
+{55FEBD76-A4D1-40BD-A3D0-12F88E76E2C6}
+{0ACB848E-2576-4A96-B8E8-A33599E4098C}
+{465F2EB2-0573-48E7-9769-2DF0B3E9B645}
+{A4D01352-57DF-4523-BEF8-81744CF9E934}
+{EA8B7126-1F54-416E-8F78-B7A2A6DB6AE2}
+{18A97233-E3EF-4108-BB8C-B1A8E6B1D946}
+{23C8C1C7-6F71-41FA-A807-27A9B2C9E39F}
+{536EAA1A-08EF-440F-8467-A94CAA896769}
+{8F717881-A375-415E-A9C8-DAFA5696975A}
+<REDACTED>
+{FDA36983-3C67-43D1-A502-BFFA05CDB995}
+
+
+PS C:\Users\psword-sa>

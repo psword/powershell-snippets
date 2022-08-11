@@ -1,0 +1,9 @@
+Powershell
+
+Get-WindowsCapability -Name RSAT* -Online | Add-WindowsCapability -Online
+
+DISM
+
+https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/features-on-demand-v2--capabilities#using-dism-add-capability-to-add-or-remove-fods
+
+https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/features-on-demand-non-language-fod

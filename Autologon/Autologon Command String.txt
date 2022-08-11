@@ -1,0 +1,1 @@
+Start-Process "C:\temppath\Autologon.exe" -ArgumentList "COMP","DOMAIN","PASSWORD","/accepteula"

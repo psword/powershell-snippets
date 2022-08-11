@@ -1,0 +1,2 @@
+$fullaccess = Get-Mailbox -ResultSize unlimited | Get-MailboxPermission | Where-Object {(-not ($_.identity -like "*DiscoverySearchMailbox*")) -and (-not ($_.User -like "NT AUTHORITY\SELF")) -and ($_.IsInherited -eq $false)}
+$fullaccess | ft Identity,User,AccessRights -AutoSize

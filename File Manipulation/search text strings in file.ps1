@@ -1,0 +1,1 @@
+Select-String "text, somemoretext" -Path "C:\MyPath\*.txt"

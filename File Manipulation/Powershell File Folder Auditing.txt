@@ -1,0 +1,16 @@
+File Auditing
+
+
+
+$Path = "c:\test"
+$LogPath = "c:\test"
+$User = "Domain\user"
+Get-ChildItem $Path -force -Recurse | 
+    Select Name,Directory,Length,@{Name="Owner";Expression={(Get-ACL $_.Fullname).Owner}},@{Name="MB";Expression={$_.Length / 1MB}},CreationTime,LastAccessTime | 
+    Where Owner -eq $User | 
+    Export-Csv $LogPath\File.csv -NoTypeInformation
+
+
+$Path = "c:\temp"
+$LogPath = "c:\temp"
+Get-ChildItem $Path -force -Recurse | Select @{Name="Owner";Expression={(Get-ACL $_.Fullname).Owner}} | Export-Csv $LogPath\File_1.csv -NoTypeInformation

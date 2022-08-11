@@ -1,0 +1,5 @@
+﻿ $drives=get-wmiobject Win32_LogicalDisk | ? {$_.drivetype -eq 3} | % {get-psdrive $_.deviceid[0]}
+$(foreach($Drive in $drives) {
+    #finds the GW archive files
+    Get-ChildItem -Include filename.extension -Recurse -ErrorAction SilentlyContinue | Where-Object {$_.PSParentPath -notlike "*Windows*"}
+    }) | Export-CSV -Path \\servername\sharepath\$env:computername.txt

@@ -1,0 +1,9 @@
+Get-Content c:\temp\servers.txt | Foreach-Object {get-eventlog -logname security -InstanceID 4776 -Message *WDigest* -ComputerName $_ | Export-CSV -NoTypeInformation c:\temp\$_.csv}
+
+powershell "get-eventlog -logname security -InstanceID 4776 -Message *WDigest* -ComputerName $ENV:COMPUTERNAME | Export-CSV -NoTypeInformation \\share\$ENV:COMPUTERNAME.csv"
+
+powershell "Get-Content c:\temp\server.txt | Foreach-Object {get-eventlog -logname security -InstanceID 4776 -Message *WDigest* -ComputerName $_ | Export-CSV -NoTypeInformation \\share\$_.csv}"
+
+Get-Content c:\machines_List.txt | Foreach-Object {get-eventlog -logname security -InstanceID 4776 -Message *WDigest* -ComputerName $_} | Export-Csv -Notype "$_.csv"}
+
+Get-Content c:\temp\servers.txt | Foreach-Object {get-eventlog -logname security -InstanceID 4776 -Message *WDigest* -ComputerName $_}

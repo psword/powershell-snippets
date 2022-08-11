@@ -1,0 +1,11 @@
+[String]$username = "DOMAIN\USer"
+[String]$outfile = "C:\temp\searchowner.csv"
+$path = Get-ChildItem "\\servername\folder" -Recurse
+Foreach( $file in $path ) {
+  $f = Get-Acl $file.FullName
+  if( $f.Owner -eq $username ) {
+    Write-Host( "{0}"-f $file.FullName | Out-File `
+      -Encoding "UTF8" `
+      -FilePath $outfile -Append)
+  }
+}

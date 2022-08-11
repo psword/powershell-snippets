@@ -1,0 +1,2 @@
+$folders=Get-Content -Path C:\temp\folders3.txt
+ foreach ($folder in $folders) {"{0} MB" -f ((Get-ChildItem $folder -Recurse | Measure-Object -Property Length -Sum -ErrorAction Stop).Sum / 1MB)}

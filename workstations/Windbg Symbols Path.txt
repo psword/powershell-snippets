@@ -1,0 +1,6 @@
+srv*https://msdl.microsoft.com/download/symbols
+
+
+
+
+https://docs.microsoft.com/en-us/windows-hardware/drivers/debugger/symbol-path

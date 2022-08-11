@@ -1,0 +1,4 @@
+reg delete HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NlaSvc\Parameters\Internet /f
+reg delete HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NlaSvc\Parameters\Cache /f
+sc config NlaSvc start= delayed-auto
+sc triggerinfo NlaSvc start/networkon stop/networkoff

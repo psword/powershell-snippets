@@ -1,0 +1,7 @@
+Match blank lines only
+
+^\n|^\s+\n
+
+Match new line (carriage return)
+
+\n

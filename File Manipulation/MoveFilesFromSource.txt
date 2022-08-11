@@ -1,0 +1,50 @@
+﻿<#
+.SYNOPSIS
+This function will allow admin to move files using an input file based on CSV.
+
+.DESCRIPTION
+This script is really meant to be used in conjuction with a script to find the file owner by UNC path.  Such a script would print the filenames in a CSV file for input.
+
+.PARAMETER inputfile
+This is the full path of the CSV file.
+
+.PARAMETER username
+This will name the folder according to the username you enter.
+
+.PARAMETER destinationpath
+This is the UNC pathname of the destination you want to use.
+
+.EXAMPLE
+Move-UserFiles -inputfule C:\Temp\Test.csv -Username jdoe -DestinationPath \\FileServer\share\subfolder.
+
+.NOTES
+All Parameters are required.
+#>
+Function Move-UserFiles {
+    [CmdletBinding()]
+    Param(
+        [Parameter(Mandatory)]
+        [string]$inputfile,
+        [Parameter(Mandatory)]
+        [string]$username,
+        [Parameter(Mandatory)]
+        [string]$destinationpath
+    )
+
+    Write-Verbose -Message "Now importing your files so we can perform the necessary actions..."
+    $files = @()
+    Import-Csv -Path $inputfile -Header Path | ForEach-Object {
+    $files += $_.Path
+    }
+
+        Write-Verbose -Message "Entering move sequence..."
+        foreach ($file in $files) {
+            $directoryname = Split-path -Path $file -NoQualifier
+            $path1 = $file
+            $path2 = "$destinationpath\$username$directoryname"
+            New-Item -ItemType File -Path "$path2" -Force
+            Move-Item -Path "$path1" -Destination "$path2" -Force
+       }
+    
+Write-Verbose -Message  "Move is complete.  Here is the path where you should now see them: $destinationpath\$username"
+    }

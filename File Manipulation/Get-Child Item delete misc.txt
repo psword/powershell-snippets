@@ -1,0 +1,8 @@
+$Names = Get-ChildItem -Path Z: | Where-Object{$_.psiscontainer}
+
+foreach ($Name in $Names) {
+    if($null -eq (Get-ChildItem -Path $Name)) {
+            Write-Output "$Name is empty.  I want to delete it."
+            $Name | Remove-Item -Force
+    }
+}

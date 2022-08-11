@@ -1,0 +1,5 @@
+ 
+C:\Windows\System32\forfiles.exe -P C:\folder -M *.log -D -10 -C "CMD.EXE /DEL @path"
+
+
+C:\Windows\System32\forfiles.exe /P Z:\ /M *.* /S /D -60 /C "CMD.EXE /DEL @path"

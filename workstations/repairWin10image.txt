@@ -1,0 +1,9 @@
+dism /Get-WimInfo /WimFile:C:\TestEnvironment1TB\Win10WIM_Slipstream_from_ESD\install.esd
+
+
+
+DISM /Online /Cleanup-Image /StartComponentCleanup
+
+DISM /Online /Cleanup-Image /AnalyzeComponentStore
+
+DISM /Online /Cleanup-Image /RestoreHealth /source:F:\Sources\Install.wim:1 /LimitAccess

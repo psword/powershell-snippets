@@ -1,0 +1,1 @@
+Get-EventLog -LogName security -Computer $TermServers | Select-Object TimeWritten,@{Name="UserName";Expression={ $_.ReplacementStrings[1]}},EventID | Where {$_.UserName -eq "$p1" -and $_.EventID -eq "4648"}
